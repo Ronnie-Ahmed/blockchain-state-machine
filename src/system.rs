@@ -14,7 +14,7 @@ impl Pallet{
     }
 
     pub fn inc_block_number(&mut self)->Result<(),&'static str>{
-        self.block_number.checked_add(1).ok_or("Error");
+        self.block_number+=1;
         Ok(())
     }
     pub fn inc_nonce(&mut self,who:&String){
@@ -32,7 +32,7 @@ mod test{
         let mut system=super::Pallet::new();
         system.inc_block_number();
         let alice="Alice".to_string();
-        assert_eq!(system.block_number(),0);
+        assert_eq!(system.block_number(),1);
         let mut nonce=match system.nonce.get(&alice){
             Some(val)=>val.to_owned(),
             None=>{

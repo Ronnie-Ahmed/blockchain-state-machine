@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 
 
 #[warn(dead_code)]
+#[derive(Debug)]
 pub struct Pallet{
     balances:BTreeMap<String,u128>
 }

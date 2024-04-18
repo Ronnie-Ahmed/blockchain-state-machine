@@ -1,10 +1,14 @@
-use std::collections::BTreeMap;
+use std::{backtrace::Backtrace, collections::BTreeMap};
+
+
+type AccountId=String;
+type Balance=u128;
 
 
 #[warn(dead_code)]
 #[derive(Debug)]
 pub struct Pallet{
-    balances:BTreeMap<String,u128>
+    balances:BTreeMap<AccountId,Balance>
 }
 
 #[warn(dead_code)]
@@ -13,11 +17,11 @@ impl Pallet{
         Self { balances: BTreeMap::new() }
     }
 
-    pub fn set_balance(&mut self,who:&String,amount:u128){
+    pub fn set_balance(&mut self,who:&AccountId,amount:Balance){
         self.balances.insert(who.clone(), amount);
     }
 
-    pub fn balance(&self,who:&String)->u128{
+    pub fn balance(&self,who:&AccountId)->Balance{
         match self.balances.get(&who.to_string()){
             Some(val)=>val.to_owned(),
             None=>{
@@ -27,7 +31,7 @@ impl Pallet{
         }
     }
 
-    pub fn transfer(&mut self,sender:&String,receiver:&String,amount:u128)->Result<(),&'static str>{
+    pub fn transfer(&mut self,sender:&AccountId,receiver:&AccountId,amount:Balance)->Result<(),&'static str>{
 
         let sender_balance=self.balance(&sender.clone());
         let receiver_balance=self.balance(&receiver.clone());

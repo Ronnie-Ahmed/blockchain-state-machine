@@ -12,10 +12,19 @@ mod types{
 	pub type Nonce=u32;
 }
 
+
+
+
 #[derive(Debug)]
 pub struct Runtime{
-	system:system::Pallet<types::AccountId,types::Balance,types::Nonce>,
+	system:system::Pallet<Self>,
 	balance:balances::Pallet<types::AccountId,types::Balance>
+}
+
+impl system::Config for Runtime{
+	type AccountId = types::AccountId;
+	type BlockNumber = types::BlockNumber;
+	type Nonce = types::Nonce;
 }
 
 

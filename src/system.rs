@@ -1,18 +1,34 @@
 use std::collections::BTreeMap;
+use core::ops::AddAssign;
+use num::traits::{One, Zero};
 
-type AccountId=String;
-type BlockNumber=u32;
-type Nonce=u32;
+use crate::types::BlockNumber;
+
+
+// type AccountId=String;
+// type BlockNumber=u32;
+// type Nonce=u32;
 
 #[derive(Debug)]
-pub struct Pallet{
+pub struct Pallet<AccountId,BlockNumber,Nonce>{
     block_number:BlockNumber,
-    nonce:BTreeMap<AccountId,BlockNumber>
+    nonce:BTreeMap<AccountId,Nonce>
 }
 
-impl Pallet{
+impl<AccountId,BlockNumber,Nonce> Pallet <AccountId,BlockNumber,Nonce>
+
+where
+    AccountId: Ord + Clone,
+    BlockNumber: Zero + One + AddAssign + Copy,
+    Nonce: Zero + One + Copy,
+{
+
+
+
+
+
     pub fn new()->Self{
-        Self { block_number: 0, nonce: BTreeMap::new() }
+        Self { block_number: BlockNumber::zero(), nonce: BTreeMap::new() }
     }
 
     pub fn block_number(&self)->BlockNumber{
@@ -20,13 +36,13 @@ impl Pallet{
     }
 
     pub fn inc_block_number(&mut self)->Result<(),&'static str>{
-        self.block_number+=1;
+        self.block_number+=BlockNumber::one();
         Ok(())
     }
     pub fn inc_nonce(&mut self,who:&AccountId){
-        let nonce=self.nonce.get(&who.clone()).unwrap_or(&0);
-		let new_nonce = nonce + 1;
-        self.nonce.insert(who.clone(), new_nonce);
+        let nonce = *self.nonce.get(&who).unwrap_or(&Nonce::zero());
+		let new_nonce = nonce + Nonce::one();
+		self.nonce.insert(who.clone(), new_nonce);
     }
 }
 
@@ -35,7 +51,7 @@ mod test{
 
     #[test]
     pub fn init_system(){
-        let mut system=super::Pallet::new();
+        let mut system=super::Pallet::<String,u32,u32>::new();
         system.inc_block_number();
         let alice="Alice".to_string();
         assert_eq!(system.block_number(),1);

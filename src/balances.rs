@@ -1,9 +1,10 @@
 use std::{backtrace::Backtrace, collections::BTreeMap};
 use num::traits::{CheckedAdd, CheckedSub, Zero};
 
+use crate::system;
 
-pub trait  Config {
-    type AccountId:Ord +Clone;
+
+pub trait  Config :system::Config{
     type Balance: Zero + CheckedSub + CheckedAdd + Copy;
    
 }
@@ -54,11 +55,18 @@ impl <T:Config> Pallet<T>
 
 #[cfg(test)]
 mod tests{
+    use crate::system;
+
 
     struct TestConfig;
 
-    impl super::Config for TestConfig{
+    impl system::Config for TestConfig{
         type AccountId = String;
+        type BlockNumber = u32;
+        type Nonce = u32;
+    }
+
+    impl super::Config for TestConfig{
         type Balance = u128;
     }
 

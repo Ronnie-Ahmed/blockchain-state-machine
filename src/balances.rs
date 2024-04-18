@@ -2,38 +2,44 @@ use std::{backtrace::Backtrace, collections::BTreeMap};
 use num::traits::{CheckedAdd, CheckedSub, Zero};
 
 
-#[warn(dead_code)]
-#[derive(Debug)]
-pub struct Pallet <AccountId,Balance>{
-    balances:BTreeMap<AccountId,Balance>
+pub trait  Config {
+    type AccountId:Ord +Clone;
+    type Balance: Zero + CheckedSub + CheckedAdd + Copy;
+   
 }
 
-#[warn(dead_code)]
-impl <AccountId,Balance> Pallet<AccountId,Balance>
-where
 
-        AccountId:Ord +Clone,
-        Balance: Zero + CheckedSub + CheckedAdd + Copy,
+#[warn(dead_code)]
+#[derive(Debug)]
+pub struct Pallet <T:Config>{
+    balances:BTreeMap<T::AccountId,T::Balance>
+}
+
+
+
+#[warn(dead_code)]
+impl <T:Config> Pallet<T>
+
 {
     pub fn new()->Self{
         Self { balances: BTreeMap::new() }
     }
 
-    pub fn set_balance(&mut self,who:&AccountId,amount:Balance){
+    pub fn set_balance(&mut self,who:&T::AccountId,amount:T::Balance){
         self.balances.insert(who.clone(), amount);
     }
 
-    pub fn balance(&self,who:&AccountId)->Balance{
+    pub fn balance(&self,who:&T::AccountId)->T::Balance{
         match self.balances.get(&who){
             Some(val)=>val.to_owned(),
             None=>{
                 println!("Nothing is Found");
-                Balance::zero()
+                T::Balance::zero()
             }       
         }
     }
 
-    pub fn transfer(&mut self,sender:&AccountId,receiver:&AccountId,amount:Balance)->Result<(),&'static str>{
+    pub fn transfer(&mut self,sender:&T::AccountId,receiver:&T::AccountId,amount:T::Balance)->Result<(),&'static str>{
 
         let sender_balance=self.balance(&sender.clone());
         let receiver_balance=self.balance(&receiver.clone());
@@ -49,9 +55,16 @@ where
 #[cfg(test)]
 mod tests{
 
+    struct TestConfig;
+
+    impl super::Config for TestConfig{
+        type AccountId = String;
+        type Balance = u128;
+    }
+
     #[test]
     fn init_balances(){
-        let mut balances=super::Pallet::<String,u128>::new();
+        let mut balances=super::Pallet::<TestConfig>::new();
         let alice=String::from("Alice");
         let bob=String::from("BOB");
         assert_eq!(balances.balance(&alice.clone()),0);
@@ -63,7 +76,7 @@ mod tests{
 
     #[test]
     fn transfer_balance(){
-        let mut balances=super::Pallet::<String,u128>::new();
+        let mut balances=super::Pallet::<TestConfig>::new();
 
         let amount=100;
         let alice=String::from("Alice");

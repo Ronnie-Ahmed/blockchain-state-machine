@@ -40,7 +40,7 @@ impl <T:Config> Pallet<T>
         }
     }
 
-    pub fn transfer(&mut self,sender:&T::AccountId,receiver:&T::AccountId,amount:T::Balance)->Result<(),&'static str>{
+    pub fn transfer(&mut self,sender:&T::AccountId,receiver:&T::AccountId,amount:T::Balance)->crate::support::DispatchResult{
 
         let sender_balance=self.balance(&sender.clone());
         let receiver_balance=self.balance(&receiver.clone());

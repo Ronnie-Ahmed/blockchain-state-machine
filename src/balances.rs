@@ -1,18 +1,20 @@
 use std::{backtrace::Backtrace, collections::BTreeMap};
-
-
-type AccountId=String;
-type Balance=u128;
+use num::traits::{CheckedAdd, CheckedSub, Zero};
 
 
 #[warn(dead_code)]
 #[derive(Debug)]
-pub struct Pallet{
+pub struct Pallet <AccountId,Balance>{
     balances:BTreeMap<AccountId,Balance>
 }
 
 #[warn(dead_code)]
-impl Pallet{
+impl <AccountId,Balance> Pallet<AccountId,Balance>
+where
+
+        AccountId:Ord +Clone,
+        Balance: Zero + CheckedSub + CheckedAdd + Copy,
+{
     pub fn new()->Self{
         Self { balances: BTreeMap::new() }
     }
@@ -22,11 +24,11 @@ impl Pallet{
     }
 
     pub fn balance(&self,who:&AccountId)->Balance{
-        match self.balances.get(&who.to_string()){
+        match self.balances.get(&who){
             Some(val)=>val.to_owned(),
             None=>{
                 println!("Nothing is Found");
-                0
+                Balance::zero()
             }       
         }
     }
@@ -35,8 +37,8 @@ impl Pallet{
 
         let sender_balance=self.balance(&sender.clone());
         let receiver_balance=self.balance(&receiver.clone());
-        let new_sender_balance=sender_balance.checked_sub(amount).ok_or("Not Enough Funds")?;
-        let new_receiver_balance=receiver_balance.checked_add(amount).ok_or("overflow funds")?;
+        let new_sender_balance=sender_balance.checked_sub(&amount).ok_or("Not Enough Funds")?;
+        let new_receiver_balance=receiver_balance.checked_add(&amount).ok_or("overflow funds")?;
         self.balances.insert(sender.clone(), new_sender_balance);
         self.balances.insert(receiver.clone(), new_receiver_balance);
         Ok(())
@@ -46,9 +48,10 @@ impl Pallet{
 
 #[cfg(test)]
 mod tests{
+
     #[test]
     fn init_balances(){
-        let mut balances=super::Pallet::new();
+        let mut balances=super::Pallet::<String,u128>::new();
         let alice=String::from("Alice");
         let bob=String::from("BOB");
         assert_eq!(balances.balance(&alice.clone()),0);
@@ -60,7 +63,7 @@ mod tests{
 
     #[test]
     fn transfer_balance(){
-        let mut balances=super::Pallet::new();
+        let mut balances=super::Pallet::<String,u128>::new();
 
         let amount=100;
         let alice=String::from("Alice");

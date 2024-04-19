@@ -139,6 +139,27 @@ fn main() {
 		]
 	};
 	runtime.execute_block(block_1).expect("Invalid Block");
-	
+
+	let block_2=types::Block{
+		header:support::Header { block_number: 2 },
+		extrinsics:vec![
+			support::Extrinsic{
+				caller:bob.clone(),
+				call:RuntimeCall::ProofOfExistence(proof_of_existence::Call::CreateClaim { claim: "Hello World" })
+			},
+		]
+	};
+	let block_3=types::Block{
+		header:support::Header { block_number: 3 },
+		extrinsics:vec![
+			support::Extrinsic{
+				caller:alice.clone(),
+				call:RuntimeCall::ProofOfExistence(proof_of_existence::Call::RevokeClaim { claim: "Hello World" })
+			},
+		]
+	};
+	runtime.execute_block(block_2).expect("invalid Block");
+	runtime.execute_block(block_3).expect("invalid Block");
+
 	println!("{:#?}",runtime);
 }

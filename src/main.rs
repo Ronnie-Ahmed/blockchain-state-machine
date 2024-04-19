@@ -1,7 +1,7 @@
 use support::Dispatch;
 use types::AccountId;
 
-
+mod proof_of_existence;
 mod balances;
 mod system;
 mod support;

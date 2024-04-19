@@ -69,18 +69,7 @@ impl Runtime{
 				)
 			);
 		}
-		/* TODO:
-			- Increment the system's block number.
-			- Check that the block number of the incoming block matches the current block number,
-			  or return an error.
-			- Iterate over the extrinsics in the block...
-				- Increment the nonce of the caller.
-				- Dispatch the extrinsic using the `caller` and the `call` contained in the extrinsic.
-				- Handle errors from `dispatch` same as we did for individual calls: printing any
-				  error and capturing the result.
-				- You can extend the error message to include information like the block number and
-				  extrinsic number.
-		*/
+		
 		Ok(())
 	}
 } 
@@ -99,17 +88,7 @@ impl crate::support::Dispatch for Runtime{
 				self.balance.transfer(&caller, &to, amount)?;
 			}
 		}
-		/*
-			TODO:
-			Use a match statement to route the `runtime_call` to call the appropriate function in
-			our pallet. In this case, there is only `self.balances.transfer`.
-
-			Your `runtime_call` won't contain the caller information which is needed to make the
-			`transfer` call, but you have that information from the arguments to the `dispatch`
-			function.
-
-			You should propagate any errors from the call back up this function.
-		*/
+		
 		Ok(())
 	}
 }
@@ -122,17 +101,29 @@ fn main() {
 	runtime.balance.set_balance(&alice.clone(), 100);
 
 	// start emulating a block
-	runtime.system.inc_block_number();
-	assert_eq!(runtime.system.block_number(),1);
+	// runtime.system.inc_block_number();
+	// assert_eq!(runtime.system.block_number(),1);
 
-	// first transaction
+	// // first transaction
 
-	runtime.system.inc_nonce(&alice.clone());
-	let _res=runtime.balance.transfer(&alice.clone(), &bob.clone(), 30).map_err(|e| eprintln!("{}",e));
+	// runtime.system.inc_nonce(&alice.clone());
+	// let _res: Result<(), ()>=runtime.balance.transfer(&alice.clone(), &bob.clone(), 30).map_err(|e| eprintln!("{}",e));
 
-	runtime.system.inc_nonce(&alice.clone());
+	// runtime.system.inc_nonce(&alice.clone());
 
-	let _res=runtime.balance.transfer(&alice.clone(), &charlie.clone(), 20).map_err(|e| eprintln!("{}",e));
+	// let _res=runtime.balance.transfer(&alice.clone(), &charlie.clone(), 20).map_err(|e| eprintln!("{}",e));
 
+
+	let block_1=types::Block{
+		header:support::Header { block_number: 1 },
+		extrinsics:vec![
+			support::Extrinsic{
+				caller:alice.clone(),
+				call:RuntimeCall::BalancesTransfer { to: bob.clone(), amount: 30 }
+			}
+		]
+	};
+	runtime.execute_block(block_1).expect("Invalid Block");
+	
 	println!("{:#?}",runtime);
 }

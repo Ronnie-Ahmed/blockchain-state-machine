@@ -21,9 +21,10 @@ mod types{
 
 }
 
-pub enum RuntimeCall{
-
+pub enum RuntimeCall {
+	BalancesTransfer{to:types::AccountId,amount:types::Balance}
 }
+
 
 
 
@@ -56,7 +57,7 @@ impl Runtime{
 		
 		self.system.inc_block_number();
 		if block.header.block_number!=self.system.block_number(){
-			return Err(&"block number does not match what is expected")
+			return Err(&"block number does not match what is expected");
 		}
 
 		for (i, support::Extrinsic{caller,call}) in block.extrinsics.into_iter().enumerate(){
@@ -87,8 +88,29 @@ impl Runtime{
 impl crate::support::Dispatch for Runtime{
 	type Caller = <Runtime as system::Config>::AccountId;
 	type Call = RuntimeCall;
-	fn dispatch(&mut self, caller: Self::Caller, call: Self::Call) -> support::DispatchResult {
-		unimplemented!()
+	fn dispatch(
+		&mut self,
+		caller: Self::Caller,
+		runtime_call: Self::Call,
+	) -> support::DispatchResult {
+
+		match runtime_call{
+			RuntimeCall::BalancesTransfer { to, amount }=>{
+				self.balance.transfer(&caller, &to, amount)?;
+			}
+		}
+		/*
+			TODO:
+			Use a match statement to route the `runtime_call` to call the appropriate function in
+			our pallet. In this case, there is only `self.balances.transfer`.
+
+			Your `runtime_call` won't contain the caller information which is needed to make the
+			`transfer` call, but you have that information from the arguments to the `dispatch`
+			function.
+
+			You should propagate any errors from the call back up this function.
+		*/
+		Ok(())
 	}
 }
 
